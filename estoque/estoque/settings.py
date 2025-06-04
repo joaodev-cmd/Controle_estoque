@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +27,28 @@ SECRET_KEY = 'django-insecure-g-7cv8cywmh)q@tj!5212wus2^^mrhthknw(e3fa*0&-_6*bi@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Configuração do banco de dados para produção e desenvolvimento
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# Configurações de produção Railway
+if not DEBUG:
+    ALLOWED_HOSTS = ['*']
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGIN', 'https://*.railway.app')]
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
 ALLOWED_HOSTS = []
 
 
@@ -37,10 +61,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',  # Adiciona para servir estáticos no dev
+    'core',
+    'accounts',
+    'transacao',
+    'enventario',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Adiciona para servir estáticos em produção
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,7 +84,7 @@ ROOT_URLCONF = 'estoque.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Adiciona a pasta templates na raiz do projeto
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,17 +97,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'estoque.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 
 # Password validation
@@ -115,6 +134,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Garante que WhiteNoise comprima e gere manifestos para cache busting
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -1,0 +1,106 @@
+{% extends '_base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Bem-vindo ao Estoque!</h1>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5>Fisioterapeuta com maior gasto por produto</h5>
+            <div class="chart-container" style="position:relative; height:300px; width:100%">
+                <canvas id="gastoPorFisioProduto"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h5>Produtos com mais saídas</h5>
+            <div class="chart-container" style="position:relative; height:300px; width:100%">
+                <canvas id="produtosMaisSaidas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h5>Gastos totais por fisioterapeuta</h5>
+            <div class="chart-container" style="position:relative; height:300px; width:100%">
+                <canvas id="gastoPorFisio"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h5>Distribuição de retiradas por destino</h5>
+            <div class="chart-container" style="position:relative; height:300px; width:100%">
+                <canvas id="destinoChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico 1: Fisioterapeuta com maior gasto por produto
+const dadosFisios = {{ gastos_por_fisio|safe }};
+const labelsFisios = dadosFisios.map(x => x.fisioterapeuta__username + ' - ' + x.produto_estoque__produto__nome);
+const dataFisios = dadosFisios.map(x => x.total_gasto);
+new Chart(document.getElementById('gastoPorFisioProduto'), {
+    type: 'bar',
+    data: {
+        labels: labelsFisios,
+        datasets: [{
+            label: 'Gasto (R$)',
+            data: dataFisios,
+            backgroundColor: '#1976d2',
+        }]
+    },
+    options: {responsive: true}
+});
+// Gráfico 2: Produtos com mais saídas
+const dadosProdutos = {{ produtos_mais_saidas|safe }};
+const labelsProdutos = dadosProdutos.map(x => x.produto_estoque__produto__nome);
+const dataProdutos = dadosProdutos.map(x => x.total_saida);
+new Chart(document.getElementById('produtosMaisSaidas'), {
+    type: 'bar',
+    data: {
+        labels: labelsProdutos,
+        datasets: [{
+            label: 'Saídas',
+            data: dataProdutos,
+            backgroundColor: '#43a047',
+        }]
+    },
+    options: {responsive: true}
+});
+// Gráfico 3: Gastos totais por fisioterapeuta
+const dadosGastos = {{ gastos_fisioterapeuta|safe }};
+const labelsGastos = dadosGastos.map(x => x.fisioterapeuta__username);
+const dataGastos = dadosGastos.map(x => x.total_gasto);
+new Chart(document.getElementById('gastoPorFisio'), {
+    type: 'bar',
+    data: {
+        labels: labelsGastos,
+        datasets: [{
+            label: 'Gasto Total (R$)',
+            data: dataGastos,
+            backgroundColor: '#fbc02d',
+        }]
+    },
+    options: {responsive: true}
+});
+// Gráfico 5: Distribuição de retiradas por destino
+const destinoData = {{ destino_data|safe }};
+const labelsDestino = destinoData.map(x => x.destino);
+const dataDestino = destinoData.map(x => x.total);
+new Chart(document.getElementById('destinoChart'), {
+    type: 'pie',
+    data: {
+        labels: labelsDestino,
+        datasets: [{
+            label: 'Retiradas',
+            data: dataDestino,
+            backgroundColor: ['#1976d2', '#43a047'],
+        }]
+    },
+    options: {responsive: true}
+});
+</script>
+{% endblock %}

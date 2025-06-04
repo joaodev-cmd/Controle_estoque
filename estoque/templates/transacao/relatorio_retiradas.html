@@ -1,0 +1,83 @@
+{% extends '_base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Relatório de Retiradas</h2>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <input type="text" id="filtro-fisio" class="form-control" placeholder="Filtrar por fisioterapeuta">
+        </div>
+        <div class="col-md-3">
+            <input type="text" id="filtro-produto" class="form-control" placeholder="Filtrar por produto">
+        </div>
+        <div class="col-md-3">
+            <input type="date" id="filtro-data" class="form-control" placeholder="Filtrar por data">
+        </div>
+        <div class="col-md-3">
+            <select id="filtro-destino" class="form-control">
+                <option value="">Todos os destinos</option>
+                <option value="SUS">SUS</option>
+                <option value="Consultório">Consultório</option>
+            </select>
+        </div>
+    </div>
+    <table class="table table-striped mt-4" id="relatorio-table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Fisioterapeuta</th>
+                <th>Produto</th>
+                <th>Quantidade</th>
+                <th>Destino</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in relatorios %}
+            <tr>
+                <td>{{ r.data_retirada|date:'Y-m-d H:i' }}</td>
+                <td>{{ r.fisioterapeuta.get_full_name|default:r.fisioterapeuta.username }}</td>
+                <td>{{ r.produto_estoque.produto.nome }}</td>
+                <td>{{ r.quantidade_retirada }}</td>
+                <td>{{ r.get_destino_display }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhuma retirada registrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fisioInput = document.getElementById('filtro-fisio');
+    const produtoInput = document.getElementById('filtro-produto');
+    const dataInput = document.getElementById('filtro-data');
+    const destinoSelect = document.getElementById('filtro-destino');
+    const table = document.getElementById('relatorio-table');
+    const rows = table.querySelectorAll('tbody tr');
+
+    function filtrar() {
+        const fisio = fisioInput.value.toLowerCase();
+        const produto = produtoInput.value.toLowerCase();
+        const data = dataInput.value;
+        const destino = destinoSelect.value;
+        rows.forEach(row => {
+            const tds = row.querySelectorAll('td');
+            if (tds.length === 0) return;
+            const dataRow = tds[0].textContent.substr(0, 10);
+            const fisioRow = tds[1].textContent.toLowerCase();
+            const produtoRow = tds[2].textContent.toLowerCase();
+            const destinoRow = tds[4].textContent;
+            let show = true;
+            if (fisio && !fisioRow.includes(fisio)) show = false;
+            if (produto && !produtoRow.includes(produto)) show = false;
+            if (data && dataRow !== data) show = false;
+            if (destino && destinoRow !== destino) show = false;
+            row.style.display = show ? '' : 'none';
+        });
+    }
+    fisioInput.addEventListener('input', filtrar);
+    produtoInput.addEventListener('input', filtrar);
+    dataInput.addEventListener('input', filtrar);
+    destinoSelect.addEventListener('change', filtrar);
+});
+</script>
+{% endblock %}
