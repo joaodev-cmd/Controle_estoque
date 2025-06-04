@@ -1,17 +1,92 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/style-preset.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #f4f6fb;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .login-container {
+            max-width: 370px;
+            margin: 60px auto;
+            padding: 32px 24px 24px 24px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+            text-align: center;
+        }
+        .login-container h2 {
+            margin-bottom: 24px;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-size: 16px;
+            text-align: left;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 14px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 18px;
+            margin-bottom: 18px;
+            box-sizing: border-box;
+            background: #f9f9f9;
+            transition: border 0.2s;
+        }
+        .login-container input:focus {
+            border: 1.5px solid #1976d2;
+            outline: none;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 14px;
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .login-container button:hover {
+            background: #1251a3;
+        }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 16px;
+            color: #c00;
+            font-size: 15px;
+        }
+        @media (max-width: 500px) {
+            .login-container {
+                max-width: 98vw;
+                margin: 30px 1vw;
+                padding: 24px 6vw 18px 6vw;
+            }
+            .login-container h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="login-container" style="max-width:350px;margin:60px auto;padding:32px 24px 24px 24px;background:#fff;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,0.08);text-align:center;">
+    <div class="login-container">
         <h2>Login</h2>
         {% if messages %}
-            <ul class="messages" style="list-style:none;padding:0;margin-bottom:16px;color:#c00;font-size:15px;">
+            <ul class="messages">
                 {% for message in messages %}
                     <li>{{ message }}</li>
                 {% endfor %}
@@ -19,15 +94,15 @@
         {% endif %}
         <form method="post">
             {% csrf_token %}
-            <div style="margin-bottom:18px;text-align:left;">
+            <div>
                 <label for="username">Usuário:</label>
-                <input type="text" name="username" id="username" required style="width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:16px;box-sizing:border-box;">
+                <input type="text" name="username" id="username" required>
             </div>
-            <div style="margin-bottom:18px;text-align:left;">
+            <div>
                 <label for="password">Senha:</label>
-                <input type="password" name="password" id="password" required style="width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:16px;box-sizing:border-box;">
+                <input type="password" name="password" id="password" required>
             </div>
-            <button type="submit" style="width:100%;padding:10px;background:#1976d2;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;transition:background 0.2s;">Entrar</button>
+            <button type="submit">Entrar</button>
         </form>
     </div>
 </body>
