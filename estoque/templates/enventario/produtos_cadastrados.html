@@ -2,105 +2,107 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Produtos Cadastrados</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th>Descrição</th>
-                <th>Preço</th>
-                <th>Fisioterapia?</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for produto in produtos %}
-            <tr>
-                <td>{{ produto.nome }}</td>
-                <td>{{ produto.get_categoria_display }}</td>
-                <td>{{ produto.descricao }}</td>
-                <td>R$ {{ produto.preco }}</td>
-                <td>{{ produto.fisioterapia|yesno:"Sim,Não" }}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarModal{{ produto.id }}">Editar</button>
-                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#excluirModal{{ produto.id }}">Excluir</button>
-                </td>
-            </tr>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Preço</th>
+                    <th>Fisioterapia?</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produto in produtos %}
+                <tr>
+                    <td>{{ produto.nome }}</td>
+                    <td>{{ produto.get_categoria_display }}</td>
+                    <td>{{ produto.descricao }}</td>
+                    <td>R$ {{ produto.preco }}</td>
+                    <td>{{ produto.fisioterapia|yesno:"Sim,Não" }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarModal{{ produto.id }}">Editar</button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#excluirModal{{ produto.id }}">Excluir</button>
+                    </td>
+                </tr>
 
-            <!-- Modal de Edição -->
-            <div class="modal fade" id="editarModal{{ produto.id }}" tabindex="-1" aria-labelledby="editarLabel{{ produto.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" action="{% url 'editar_produto' produto.id %}">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editarLabel{{ produto.id }}">Editar Produto</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label>Nome</label>
-                                    <input type="text" name="nome" class="form-control" value="{{ produto.nome }}">
+                <!-- Modal de Edição -->
+                <div class="modal fade" id="editarModal{{ produto.id }}" tabindex="-1" aria-labelledby="editarLabel{{ produto.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'editar_produto' produto.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editarLabel{{ produto.id }}">Editar Produto</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="mb-3">
-                                    <label>Categoria</label>
-                                    <select name="categoria" class="form-control">
-                                        {% for key, value in categorias %}
-                                            <option value="{{ key }}" {% if produto.categoria == key %}selected{% endif %}>{{ value }}</option>
-                                        {% endfor %}
-                                    </select>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label>Nome</label>
+                                        <input type="text" name="nome" class="form-control" value="{{ produto.nome }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Categoria</label>
+                                        <select name="categoria" class="form-control">
+                                            {% for key, value in categorias %}
+                                                <option value="{{ key }}" {% if produto.categoria == key %}selected{% endif %}>{{ value }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Descrição</label>
+                                        <textarea name="descricao" class="form-control">{{ produto.descricao }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Preço</label>
+                                        <input type="number" step="0.01" name="preco" class="form-control" value="{{ produto.preco }}">
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="fisioterapia" id="fisioterapia{{ produto.id }}" {% if produto.fisioterapia %}checked{% endif %}>
+                                        <label class="form-check-label" for="fisioterapia{{ produto.id }}">
+                                            Produto de fisioterapia?
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label>Descrição</label>
-                                    <textarea name="descricao" class="form-control">{{ produto.descricao }}</textarea>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Salvar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                 </div>
-                                <div class="mb-3">
-                                    <label>Preço</label>
-                                    <input type="number" step="0.01" name="preco" class="form-control" value="{{ produto.preco }}">
-                                </div>
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" name="fisioterapia" id="fisioterapia{{ produto.id }}" {% if produto.fisioterapia %}checked{% endif %}>
-                                    <label class="form-check-label" for="fisioterapia{{ produto.id }}">
-                                        Produto de fisioterapia?
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Salvar</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Modal de Exclusão -->
-            <div class="modal fade" id="excluirModal{{ produto.id }}" tabindex="-1" aria-labelledby="excluirLabel{{ produto.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" action="{% url 'deletar_produto' produto.id %}">
-                            {% csrf_token %}
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="excluirLabel{{ produto.id }}">Confirmar Exclusão</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                Tem certeza que deseja excluir o produto <strong>{{ produto.nome }}</strong>?
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-danger">Excluir</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            </div>
-                        </form>
+                <!-- Modal de Exclusão -->
+                <div class="modal fade" id="excluirModal{{ produto.id }}" tabindex="-1" aria-labelledby="excluirLabel{{ produto.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'deletar_produto' produto.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="excluirLabel{{ produto.id }}">Confirmar Exclusão</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Tem certeza que deseja excluir o produto <strong>{{ produto.nome }}</strong>?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-danger">Excluir</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% empty %}
-            <tr>
-                <td colspan="6">Nenhum produto cadastrado.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% empty %}
+                <tr>
+                    <td colspan="6">Nenhum produto cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

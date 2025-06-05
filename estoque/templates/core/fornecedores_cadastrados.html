@@ -1,0 +1,115 @@
+{% extends '_base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Fornecedores Cadastrados</h2>
+    <div class="table-responsive">
+        <table class="table table-striped" id="tabela-fornecedores">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Email</th>
+                    <th>Endereço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fornecedor in fornecedores %}
+                <tr id="linha-fornecedor-{{ fornecedor.id }}">
+                    <td class="nome">{{ fornecedor.nome }}</td>
+                    <td class="telefone">{{ fornecedor.telefone }}</td>
+                    <td class="email">{{ fornecedor.email }}</td>
+                    <td class="endereco">{{ fornecedor.endereco }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarModal{{ fornecedor.id }}">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="deletarFornecedor({{ fornecedor.id }})">Excluir</button>
+                    </td>
+                </tr>
+
+                <!-- Modal de Edição -->
+                <div class="modal fade" id="editarModal{{ fornecedor.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Editar Fornecedor</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="id-fornecedor" value="{{ fornecedor.id }}">
+                                <div class="mb-3">
+                                    <label>Nome</label>
+                                    <input type="text" class="form-control" id="nome-{{ fornecedor.id }}" value="{{ fornecedor.nome }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Telefone</label>
+                                    <input type="text" class="form-control" id="telefone-{{ fornecedor.id }}" value="{{ fornecedor.telefone }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <input type="email" class="form-control" id="email-{{ fornecedor.id }}" value="{{ fornecedor.email }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Endereço</label>
+                                    <input type="text" class="form-control" id="endereco-{{ fornecedor.id }}" value="{{ fornecedor.endereco }}">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" onclick="salvarFornecedor({{ fornecedor.id }})">Salvar</button>
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function salvarFornecedor(id) {
+    const data = {
+        nome: document.getElementById(`nome-${id}`).value,
+        telefone: document.getElementById(`telefone-${id}`).value,
+        email: document.getElementById(`email-${id}`).value,
+        endereco: document.getElementById(`endereco-${id}`).value
+    };
+
+    fetch(`/fornecedor/${id}/editar/ajax/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+      .then(result => {
+        if (result.success) {
+            const row = document.getElementById(`linha-fornecedor-${id}`);
+            row.querySelector('.nome').textContent = data.nome;
+            row.querySelector('.telefone').textContent = data.telefone;
+            row.querySelector('.email').textContent = data.email;
+            row.querySelector('.endereco').textContent = data.endereco;
+            bootstrap.Modal.getInstance(document.getElementById(`editarModal${id}`)).hide();
+        }
+    });
+}
+
+function deletarFornecedor(id) {
+    if (!confirm('Tem certeza que deseja excluir este fornecedor?')) return;
+
+    fetch(`/fornecedor/${id}/deletar/ajax/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).then(response => response.json())
+      .then(result => {
+        if (result.success) {
+            const row = document.getElementById(`linha-fornecedor-${id}`);
+            row.remove();
+        }
+    });
+}
+</script>
+{% endblock %}
