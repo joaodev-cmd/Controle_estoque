@@ -4,31 +4,140 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Estoque Atual</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Produto</th>
-                <th>Categoria</th>
-                <th>Descrição</th>
-                <th>Quantidade</th>
-                <th>Data de Validade</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in estoque %}
-            <tr>
-                <td>{{ item.produto.nome }}</td>
-                <td>{{ item.produto.categoria }}</td>
-                <td>{{ item.produto.descricao }}</td>
-                <td>{{ item.quantidade }}</td>
-                <td>{{ item.data_de_validade|date:'d/m/Y' }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5">Nenhum produto no estoque.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" id="filtro-nome" class="form-control" placeholder="Filtrar por nome do produto">
+        </div>
+        <div class="col">
+            <input type="text" id="filtro-categoria" class="form-control" placeholder="Filtrar por categoria">
+        </div>
+    </div>
+
+    <style>
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .table-responsive table {
+            width: 100%;
+            min-width: 600px;
+        }
+    </style>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                    <th>Data de Validade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in estoque %}
+                <tr>
+                    <td>{{ item.produto.nome }}</td>
+                    <td>{{ item.produto.categoria }}</td>
+                    <td>{{ item.produto.descricao }}</td>
+                    <td>{{ item.quantidade }}</td>
+                    <td>{{ item.data_de_validade|date:'d/m/Y' }}</td>
+                    <td>
+                        <button 
+                            class="btn btn-primary btn-sm editar-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editarModal"
+                            data-id="{{ item.id }}"
+                            data-nome="{{ item.produto.nome }}"
+                            data-quantidade="{{ item.quantidade }}"
+                        >
+                            Editar
+                        </button>
+                        <form method="post" action="{% url 'excluir_estoque' item.id %}" style="display:inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">Nenhum produto no estoque.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarModalLabel">Editar Quantidade</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Produto:</strong> <span id="modal-produto-nome"></span></p>
+          <input type="hidden" name="estoque_id" id="modal-estoque-id">
+          <div class="mb-3">
+            <label for="modal-quantidade" class="form-label">Quantidade</label>
+            <input type="number" class="form-control" name="quantidade" id="modal-quantidade" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inputNome = document.getElementById('filtro-nome');
+    const inputCategoria = document.getElementById('filtro-categoria');
+    const linhas = document.querySelectorAll('table tbody tr');
+
+    function filtrar() {
+        const nomeFiltro = inputNome.value.toLowerCase();
+        const categoriaFiltro = inputCategoria.value.toLowerCase();
+
+        linhas.forEach(tr => {
+            const nome = tr.children[0].textContent.toLowerCase();
+            const categoria = tr.children[1].textContent.toLowerCase();
+
+            const mostra = nome.includes(nomeFiltro) && categoria.includes(categoriaFiltro);
+            tr.style.display = mostra ? '' : 'none';
+        });
+    }
+
+    inputNome.addEventListener('input', filtrar);
+    inputCategoria.addEventListener('input', filtrar);
+
+    // Preencher modal com dados ao clicar no botão editar
+    const editarButtons = document.querySelectorAll('.editar-btn');
+    const modalProdutoNome = document.getElementById('modal-produto-nome');
+    const modalEstoqueId = document.getElementById('modal-estoque-id');
+    const modalQuantidade = document.getElementById('modal-quantidade');
+
+    editarButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const nome = button.getAttribute('data-nome');
+            const quantidade = button.getAttribute('data-quantidade');
+            const id = button.getAttribute('data-id');
+
+            modalProdutoNome.textContent = nome;
+            modalEstoqueId.value = id;
+            modalQuantidade.value = quantidade;
+        });
+    });
+});
+</script>
 {% endblock %}

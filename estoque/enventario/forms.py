@@ -4,14 +4,16 @@ from .models import Produto, ProdutoEstoque
 class ProdutoForm(forms.ModelForm):
     class Meta:
         model = Produto
-        fields = ['fornecedor', 'categoria', 'nome', 'descricao', 'preco']
+        fields = ['fornecedor', 'categoria', 'nome', 'descricao', 'preco', 'fisioterapia']
         widgets = {
             'fornecedor': forms.Select(attrs={'class': 'form-control'}),
             'categoria': forms.Select(attrs={'class': 'form-control'}),
             'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do produto'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descrição do produto', 'rows': 3}),
             'preco': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Preço', 'step': '0.01', 'min': '0'}),
+            'fisioterapia': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
 
 class ProdutoEstoqueForm(forms.ModelForm):
     class Meta:
@@ -22,3 +24,10 @@ class ProdutoEstoqueForm(forms.ModelForm):
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantidade'}),
             'data_de_validade': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+
+
+
+class EditarEstoqueForm(forms.ModelForm):
+    class Meta:
+        model = ProdutoEstoque
+        fields = ['quantidade']

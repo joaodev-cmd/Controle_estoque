@@ -1,10 +1,15 @@
 from django.shortcuts import render, redirect
-from .forms import ProdutoForm, ProdutoEstoqueForm
+from .forms import ProdutoForm, ProdutoEstoqueForm, EditarEstoqueForm
 from transacao.models import Transacao
 from enventario.models import ProdutoEstoque
 from django.db.models import Sum, F
 from django.utils import timezone
 from datetime import timedelta
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+from enventario.models import ProdutoEstoque
+from django.http import JsonResponse
+from .models import Produto
 
 # Create your views here.
 def index(request):
@@ -67,19 +72,102 @@ def cadastrar_produto(request):
         form = ProdutoForm()
     return render(request, 'enventario/cadastrar_produto.html', {'form': form})
 
+from .models import Produto
+
+def produtos_cadastrados(request):
+    produtos = Produto.objects.all()
+    categorias = Produto._meta.get_field('categoria').choices  # <-- aqui
+
+    return render(request, 'enventario/produtos_cadastrados.html', {
+        'produtos': produtos,
+        'categorias': categorias,
+    })
+
+def editar_produto(request, id):
+    produto = get_object_or_404(Produto, id=id)
+    
+    if request.method == 'POST':
+        produto.nome = request.POST.get('nome')
+        produto.categoria = request.POST.get('categoria')
+        produto.descricao = request.POST.get('descricao')
+        produto.preco = request.POST.get('preco')
+        produto.fisioterapia = request.POST.get('fisioterapia') == 'True'
+        produto.save()
+        return redirect('lista_produtos')  # ajuste esse nome para o nome correto da view da tabela
+
+    return redirect('lista_produtos')
+
+def deletar_produto(request, id):
+    produto = get_object_or_404(Produto, id=id)
+    if request.method == 'POST':
+        produto.delete()
+        return redirect('produtos_cadastrados')
+    return render(request, 'enventario/confirmar_exclusao.html', {'produto': produto})
+
+
+
 def entrada_estoque(request):
     if request.method == 'POST':
         form = ProdutoEstoqueForm(request.POST)
         if form.is_valid():
-            form.save()
+            novo_estoque = form.save(commit=False)
+            produto = novo_estoque.produto
+
+            # Se produto é NÃO PERECÍVEL, atualizar quantidade existente
+            if produto.categoria == "NAOPERECIVEL":
+                existente = ProdutoEstoque.objects.filter(
+                    produto=produto,
+                    data_de_validade__isnull=True
+                ).first()
+
+                if existente:
+                    existente.quantidade += novo_estoque.quantidade
+                    existente.save()
+                else:
+                    novo_estoque.save()
+            else:
+                # Perecíveis (com validade) devem ter entradas separadas
+                novo_estoque.save()
+
             return redirect('enventario_index')
     else:
         form = ProdutoEstoqueForm()
+
     return render(request, 'enventario/entrada_estoque.html', {'form': form})
+
 
 def dashboard_fisioterapeuta(request):
     return render(request, 'enventario/dashboard_fisioterapeuta.html')
 
 def estoque_atual(request):
-    estoque = ProdutoEstoque.objects.select_related('produto').all().order_by('produto__nome')
-    return render(request, 'enventario/estoque_atual.html', {'estoque': estoque})
+    if request.method == 'POST':
+        estoque_id = request.POST.get('estoque_id')
+        estoque_item = ProdutoEstoque.objects.get(id=estoque_id)
+        form = EditarEstoqueForm(request.POST, instance=estoque_item)
+        if form.is_valid():
+            form.save()
+            return redirect('estoque_atual')  # Substitua pelo nome correto da URL
+    else:
+        estoque = ProdutoEstoque.objects.select_related('produto').all().order_by('produto__nome')
+        forms_dict = {item.id: EditarEstoqueForm(instance=item) for item in estoque}
+        return render(request, 'enventario/estoque_atual.html', {
+            'estoque': estoque,
+            'forms_dict': forms_dict,
+        })
+    
+
+@require_POST
+def excluir_estoque(request, id):
+    item = get_object_or_404(ProdutoEstoque, id=id)
+    item.delete()
+    return redirect('estoque_atual')  # substitua pelo nome real da sua URL de listagem
+
+
+
+
+def categoria_produto_api(request, produto_id):
+    produto = Produto.objects.filter(id=produto_id).first()
+    if produto:
+        return JsonResponse({'categoria': produto.categoria})
+    return JsonResponse({'erro': 'Produto não encontrado'}, status=404)
+

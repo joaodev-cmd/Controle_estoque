@@ -4,8 +4,46 @@
     <h2>Entrada de Produto no Estoque</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="mb-3">
+            {{ form.produto.label_tag }} {{ form.produto }}
+        </div>
+        <div class="mb-3">
+            {{ form.quantidade.label_tag }} {{ form.quantidade }}
+        </div>
+        <div class="mb-3">
+            {{ form.data_de_validade.label_tag }} 
+            {{ form.data_de_validade }}
+        </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const produtoSelect = document.getElementById("id_produto");
+    const validadeField = document.getElementById("id_data_de_validade");
+
+    async function verificarCategoria(produtoId) {
+        if (!produtoId) return;
+
+        const response = await fetch(`/api/produto/${produtoId}/categoria/`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data.categoria === "NAOPERECIVEL") {
+            validadeField.disabled = true;
+            validadeField.value = "";
+        } else {
+            validadeField.disabled = false;
+        }
+    }
+
+    produtoSelect.addEventListener('change', function () {
+        verificarCategoria(this.value);
+    });
+
+    // disparar no carregamento inicial
+    verificarCategoria(produtoSelect.value);
+});
+</script>
 {% endblock %}

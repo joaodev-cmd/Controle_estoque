@@ -10,21 +10,29 @@
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
+
         .login-container {
             max-width: 370px;
-            margin: 60px auto;
+            width: 100%;
             padding: 32px 24px 24px 24px;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 16px rgba(0,0,0,0.10);
             text-align: center;
         }
+
         .login-container h2 {
             margin-bottom: 24px;
             color: #1976d2;
             font-weight: 600;
         }
+
         .login-container label {
             display: block;
             margin-bottom: 6px;
@@ -32,6 +40,7 @@
             font-size: 16px;
             text-align: left;
         }
+
         .login-container input[type="text"],
         .login-container input[type="password"] {
             width: 100%;
@@ -44,10 +53,12 @@
             background: #f9f9f9;
             transition: border 0.2s;
         }
+
         .login-container input:focus {
             border: 1.5px solid #1976d2;
             outline: none;
         }
+
         .login-container button {
             width: 100%;
             padding: 14px;
@@ -60,9 +71,11 @@
             cursor: pointer;
             transition: background 0.2s;
         }
+
         .login-container button:hover {
             background: #1251a3;
         }
+
         .messages {
             list-style: none;
             padding: 0;
@@ -70,12 +83,14 @@
             color: #c00;
             font-size: 15px;
         }
+
         @media (max-width: 500px) {
             .login-container {
                 max-width: 98vw;
-                margin: 30px 1vw;
+                margin: 0 1vw;
                 padding: 24px 6vw 18px 6vw;
             }
+
             .login-container h2 {
                 font-size: 1.5rem;
             }

@@ -18,6 +18,10 @@ class Produto(models.Model):
     descricao = models.TextField(
         verbose_name="Descrição do produto:", max_length=194, blank=False, null=False)
     preco = models.DecimalField(verbose_name="Preço", max_digits=10, decimal_places=2, default=0)
+   
+    fisioterapia = models.BooleanField(
+        verbose_name="Produto de fisioterapia?", default=False, help_text="Marque se o produto for utilizado na fisioterapia."
+    )
 
     class Meta:
         verbose_name = "Produto"
