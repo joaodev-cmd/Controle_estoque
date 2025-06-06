@@ -1,32 +1,37 @@
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
 
+# Carrega variáveis de ambiente do .env no modo desenvolvimento
+load_dotenv()
+
+# Diretórios principais
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Variáveis de ambiente
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-g-7cv8cywmh)q@tj!5212wus2^^mrhthknw(e3fa*0&-_6*bi@')
+# Segurança e modo de depuração
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-key-dev')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-# Configuração do banco de dados PostgreSQL (Railway)
+# Hosts e CSRF
+if DEBUG:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+    CSRF_TRUSTED_ORIGINS = []
+else:
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'controleestoque-production-7f14.up.railway.app').split(',')
+    CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGIN', f"https://{ALLOWED_HOSTS[0]}")]
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Banco de dados: Railway (produção) ou SQLite (local)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
 } if DATABASE_URL else {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Produção Railway
-if not DEBUG:
-    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.railway.app').split(',')
-    CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGIN', 'https://*.railway.app')]
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
-else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Aplicativos instalados
 INSTALLED_APPS = [
@@ -36,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.runserver_nostatic',
+
+    'whitenoise.runserver_nostatic',  # Serve estáticos localmente sem interferir no collectstatic
     'core',
     'accounts',
     'transacao',
@@ -71,9 +77,17 @@ TEMPLATES = [
     },
 ]
 
+# WSGI
+ROOT_URLCONF = 'estoque.urls'
 WSGI_APPLICATION = 'estoque.wsgi.application'
 
-# Validação de senhas
+# Arquivos estáticos
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Senhas
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -87,9 +101,5 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# Arquivos estáticos
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
+# Modelos
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
