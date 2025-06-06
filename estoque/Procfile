@@ -1,1 +1,1 @@
-web: gunicorn estoque.wsgi:application --chdir estoque --bind 0.0.0.0:$PORT
+web: gunicorn estoque.wsgi:application --bind 0.0.0.0:$PORT
