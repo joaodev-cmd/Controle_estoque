@@ -1,19 +1,25 @@
 from pathlib import Path
 import os
 import dj_database_url
-from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do .env no modo desenvolvimento
+# Apenas carrega variáveis de ambiente do .env no modo de desenvolvimento
+from dotenv import load_dotenv
 load_dotenv()
 
+# ===============================
 # Diretórios principais
+# ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Segurança e modo de depuração
+# ===============================
+# Segurança e depuração
+# ===============================
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-key-dev')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
+# ===============================
 # Hosts e CSRF
+# ===============================
 if DEBUG:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
     CSRF_TRUSTED_ORIGINS = []
@@ -22,7 +28,9 @@ else:
     CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TRUSTED_ORIGIN', f"https://{ALLOWED_HOSTS[0]}")]
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Banco de dados: Railway (produção) ou SQLite (local)
+# ===============================
+# Banco de dados
+# ===============================
 DATABASE_URL = os.environ.get('DATABASE_URL')
 DATABASES = {
     'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
@@ -33,7 +41,9 @@ DATABASES = {
     }
 }
 
+# ===============================
 # Aplicativos instalados
+# ===============================
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,7 +59,9 @@ INSTALLED_APPS = [
     'enventario',
 ]
 
+# ===============================
 # Middleware
+# ===============================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -61,7 +73,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ===============================
 # Templates
+# ===============================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -77,17 +91,23 @@ TEMPLATES = [
     },
 ]
 
+# ===============================
 # WSGI
+# ===============================
 ROOT_URLCONF = 'estoque.urls'
 WSGI_APPLICATION = 'estoque.wsgi.application'
 
+# ===============================
 # Arquivos estáticos
+# ===============================
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Senhas
+# ===============================
+# Validação de senha
+# ===============================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -95,11 +115,27 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ===============================
 # Internacionalização
+# ===============================
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# Modelos
+# ===============================
+# Configuração de modelos padrão
+# ===============================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ===============================
+# Segurança em produção
+# ===============================
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
