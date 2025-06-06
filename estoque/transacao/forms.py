@@ -1,3 +1,5 @@
+# forms.py
+
 from django import forms
 from transacao.models import Transacao
 from enventario.models import ProdutoEstoque
@@ -18,8 +20,11 @@ class TransacaoForm(forms.ModelForm):
 
         base_qs = ProdutoEstoque.objects.filter(quantidade__gt=0)
 
-        if user and user.groups.filter(name='fisioterapeuta').exists():
-            base_qs = base_qs.filter(produto__fisioterapia=True)
+        if user:
+            if user.groups.filter(name='fisioterapeuta').exists():
+                base_qs = base_qs.filter(produto__fisioterapia=True)
+            elif user.groups.filter(name='funcionarios').exists():
+                base_qs = base_qs.filter(produto__fisioterapia=False)
 
         self.fields['produto_estoque'].queryset = base_qs
 

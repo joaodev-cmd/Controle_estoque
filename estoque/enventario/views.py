@@ -10,8 +10,9 @@ from django.views.decorators.http import require_POST
 from enventario.models import ProdutoEstoque
 from django.http import JsonResponse
 from .models import Produto
+from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+@login_required
 def index(request):
     # Fisioterapeuta com maior gasto por produto
     gastos_por_fisio = list(
@@ -59,9 +60,11 @@ def index(request):
         'destino_data': destino_data,
     })
 
+@login_required
 def requisicao(request):
     return render(request, 'enventario/requisicao.html')
 
+@login_required
 def cadastrar_produto(request):
     if request.method == 'POST':
         form = ProdutoForm(request.POST)
@@ -72,8 +75,7 @@ def cadastrar_produto(request):
         form = ProdutoForm()
     return render(request, 'enventario/cadastrar_produto.html', {'form': form})
 
-from .models import Produto
-
+@login_required
 def produtos_cadastrados(request):
     produtos = Produto.objects.all()
     categorias = Produto._meta.get_field('categoria').choices  # <-- aqui
@@ -83,6 +85,7 @@ def produtos_cadastrados(request):
         'categorias': categorias,
     })
 
+@login_required
 def editar_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
     
@@ -97,6 +100,7 @@ def editar_produto(request, id):
 
     return redirect('lista_produtos')
 
+@login_required
 def deletar_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
     if request.method == 'POST':
@@ -105,7 +109,7 @@ def deletar_produto(request, id):
     return render(request, 'enventario/confirmar_exclusao.html', {'produto': produto})
 
 
-
+@login_required
 def entrada_estoque(request):
     if request.method == 'POST':
         form = ProdutoEstoqueForm(request.POST)
@@ -135,10 +139,12 @@ def entrada_estoque(request):
 
     return render(request, 'enventario/entrada_estoque.html', {'form': form})
 
-
+@login_required
 def dashboard_fisioterapeuta(request):
     return render(request, 'enventario/dashboard_fisioterapeuta.html')
 
+
+@login_required
 def estoque_atual(request):
     if request.method == 'POST':
         estoque_id = request.POST.get('estoque_id')
@@ -156,6 +162,7 @@ def estoque_atual(request):
         })
     
 
+@login_required
 @require_POST
 def excluir_estoque(request, id):
     item = get_object_or_404(ProdutoEstoque, id=id)
@@ -163,8 +170,7 @@ def excluir_estoque(request, id):
     return redirect('estoque_atual')  # substitua pelo nome real da sua URL de listagem
 
 
-
-
+@login_required
 def categoria_produto_api(request, produto_id):
     produto = Produto.objects.filter(id=produto_id).first()
     if produto:

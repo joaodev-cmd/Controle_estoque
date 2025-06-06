@@ -7,6 +7,7 @@ User = get_user_model()
 DESTINO_CHOICES = [
     ("SUS", "SUS"),
     ("CONSULTORIO", "Consultório"),
+    ("Clinica", "Clínica"),
 ]
 
 class Transacao(models.Model):

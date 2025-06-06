@@ -23,12 +23,13 @@ def login_view(request):
             login(request, user)
             if user.is_superuser or user.groups.filter(name='administrador').exists():
                 return redirect('enventario_index')
-            elif user.groups.filter(name='fisioterapeuta').exists():
+            elif user.groups.filter(name__in=['fisioterapeuta', 'funcionarios']).exists():
                 return redirect('dashboard_fisioterapeuta')
             return redirect('/')  # Redireciona para a home padrão
         else:
             messages.error(request, 'Usuário ou senha inválidos.')
     return render(request, 'accounts/login.html')
+
 
 def logout_view(request):
     logout(request)

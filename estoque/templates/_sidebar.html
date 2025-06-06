@@ -2,9 +2,8 @@
 {% load user_groups %}
 
 <style>
-/* Define o tamanho da logo no sidebar */
 .m-header img {
-  width: 140px; /* corrigido */
+  width: 140px;
   height: auto;
   max-height: 40px;
   object-fit: contain;
@@ -12,7 +11,7 @@
 </style>
 
 <div class="m-header">
-  {% if request.user|has_group:'fisioterapeuta' %}
+  {% if request.user|has_any_group:'fisioterapeuta,funcionario' %}
     <a href="/enventario/dashboard-fisioterapeuta/" class="b-brand text-primary">
       <img src="{% static 'assets/images/logosfinal.png' %}">
     </a>
@@ -25,14 +24,19 @@
 
 <div class="navbar-content">
   <ul class="pc-navbar">
-    {% if request.user|has_group:'fisioterapeuta' %}
+
+    {# Fisioterapeutas e Funcionários: só requisitar #}
+    {% if request.user|has_any_group:'fisioterapeuta,funcionario' %}
       <li class="pc-item">
         <a href="/transacao/requisitar/" class="pc-link">
           <span class="pc-micon"><i class="ti ti-arrow-up"></i></span>
           <span class="pc-mtext">Requisição</span>
         </a>
       </li>
-    {% else %}
+    {% endif %}
+
+    {# Admins e superusers: veem tudo #}
+    {% if request.user.is_superuser or request.user|has_group:'administrador' %}
       <li class="pc-item">
         <a href="/enventario/" class="pc-link">
           <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
@@ -52,21 +56,15 @@
         </a>
       </li>
       <li class="pc-item">
-        <a href="/core/cadastrar-fornecedor/" class="pc-link">
-          <span class="pc-micon"><i class="ti ti-building-plus"></i></span>
-          <span class="pc-mtext">Cadastrar Fornecedor</span>
-        </a>
-      </li>
-      <li class="pc-item">
         <a href="/core/fornecedores/" class="pc-link">
           <span class="pc-micon"><i class="ti ti-building"></i></span>
           <span class="pc-mtext">Fornecedores Cadastrados</span>
         </a>
       </li>
       <li class="pc-item">
-        <a href="/transacao/requisitar/" class="pc-link">
-          <span class="pc-micon"><i class="ti ti-arrow-up"></i></span>
-          <span class="pc-mtext">Requisição</span>
+        <a href="/core/cadastrar-fornecedor/" class="pc-link">
+          <span class="pc-micon"><i class="ti ti-building-plus"></i></span>
+          <span class="pc-mtext">Cadastrar Fornecedor</span>
         </a>
       </li>
       <li class="pc-item">
@@ -88,5 +86,6 @@
         </a>
       </li>
     {% endif %}
+    
   </ul>
 </div>

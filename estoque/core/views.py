@@ -4,9 +4,10 @@ from .models import Fornecedor
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
+@login_required
 def cadastrar_fornecedor(request):
     if request.method == 'POST':
         form = FornecedorForm(request.POST)
@@ -17,12 +18,12 @@ def cadastrar_fornecedor(request):
         form = FornecedorForm()
     return render(request, 'core/cadastrar_fornecedor.html', {'form': form})
 
-
+@login_required
 def fornecedores_cadastrados(request):
     fornecedores = Fornecedor.objects.all()
     return render(request, 'core/fornecedores_cadastrados.html', {'fornecedores': fornecedores})
 
-
+@login_required
 @csrf_exempt
 def editar_fornecedor_ajax(request, id):
     if request.method == 'POST':
